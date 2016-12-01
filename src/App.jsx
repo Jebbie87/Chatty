@@ -13,13 +13,26 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = { currentUser: {name: ''},
-                   messages: []
-                 };
+                   messages: [] };
   }
 
   componentDidMount() {
     this.socket = new WebSocket('ws://localhost:4000');
-    this.socket.onmessage = this.receivedMessage;
+    this.socket.onmessage = (event) => {
+
+      const data = JSON.parse(event.data);
+
+      switch(data.type) {
+        case 'incomingMessage':
+          this.receivedMessage(data);
+          break;
+        case 'incomingNotification':
+          this.receivedMessage(data);
+          break;
+        default:
+          throw new Error(`Unknown event type $(data.type}`);
+      }
+    }
   }
 
   sendServer = (message) => {
@@ -27,16 +40,27 @@ class App extends Component {
   }
 
   receivedMessage = (serverMessage) => {
-    const parsedData = JSON.parse(serverMessage.data);
-    if (parsedData.username === '') {
-      parsedData.username = 'Anonymous'
-    }
-    const addMessage = this.state.messages.concat(parsedData);
-    this.setState({messages: addMessage });
+    this.setState({messages: this.state.messages.concat(serverMessage) });
   }
 
-  changeCurrentUser = (newUser) => {
+  // set to new user
+  // add new message to system containing both users
+  changeCurrentUser = (prevUser, newUser) => {
+    if (prevUser != newUser) {
+        if (prevUser === '') {
+          prevUser = 'Anonymous'
+        } else if (newUser === '') {
+          newUser = 'Anonymous'
+        };
+      const sendNotification = {type: 'postNotification',
+                                content: `${prevUser} changed their name to ${newUser}`};
+      this.socket.send(JSON.stringify(sendNotification));
+    };
     this.setState({currentUser: {name: newUser}});
+  }
+
+  notifyNameChange = (nameChange) => {
+    this.setState({systemMessage: nameChange});
   }
 
   render() {
@@ -45,10 +69,11 @@ class App extends Component {
           <nav>
             <h1>Chatty</h1>
           </nav>
-          <MessageList messages={this.state.messages}/>
+          <MessageList messages={this.state.messages} nameChanged={this.state.systemMessage}/>
           <ChatBar newUser={this.changeCurrentUser}
                    currentUser={this.state.currentUser}
-                   sendToServer={this.sendServer}>
+                   sendToServer={this.sendServer}
+                   notifyNameChange={this.notifyNameChange}>
           </ChatBar>
         </div>
 

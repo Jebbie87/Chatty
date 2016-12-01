@@ -16,6 +16,7 @@ const server = express()
 // Create the WebSockets server
 const wss = new SocketServer({ server });
 
+// Broadcast all messages to all clients
 wss.broadcast = function broadcast(data) {
   wss.clients.forEach(function each(client) {
     client.send(data);
@@ -23,18 +24,26 @@ wss.broadcast = function broadcast(data) {
 };
 
 // Set up a callback that will run when a client connects to the server
-// When a client connects they are assigned a socket, represented by
+// When a client connects they are assigned a socket, rjepresented by
 // the ws parameter in the callback.
 wss.on('connection', (ws) => {
   console.log('Client connected');
-
+  console.log (wss.clients.length)
   ws.on('message', function (message){
-    const parsedMessage = JSON.parse(message);
-    parsedMessage.id = uuid.v1();
 
-    console.log('Fully parsed message: ', parsedMessage)
-    console.log(`${parsedMessage.username} sent ${parsedMessage.content}`);
-    console.log('stringed', JSON.stringify(parsedMessage))
+    const parsedMessage = JSON.parse(message);
+
+    switch(parsedMessage.type) {
+      case 'postMessage':
+        parsedMessage.id = uuid.v1();
+        parsedMessage.type = 'incomingMessage';
+        break;
+      case 'postNotification':
+        parsedMessage.type = 'incomingNotification';
+        break;
+      default:
+        throw new Error(`Unknown event type ${parsedMessage.type}`)
+    }
 
     wss.broadcast(JSON.stringify(parsedMessage));
   });

@@ -20,7 +20,7 @@ nav h1 { margin: 0; }
 
 #message-list .message.system { font-weight: 400; font-style: italic; }
 
-footer form {
+footer {
   height: 41px;
   border-top: 1px solid black;
   background-color: tomato;
@@ -37,5 +37,3 @@ footer input {
 footer #username { flex: 3; }
 
 footer #new-message { flex: 7; }
-
-#chat-submit {display:none;}
