@@ -8,13 +8,13 @@ const uuid = require('node-uuid')
 const PORT = 4000;
 
 // Create a new express server
-const server = express()
+const app = express()
    // Make the express server serve static assets (html, javascript, css) from the /public folder
   .use(express.static('public'))
   .listen(PORT, '0.0.0.0', 'localhost', () => console.log(`Listening on ${ PORT }`));
 
 // Create the WebSockets server
-const wss = new SocketServer({ server });
+const wss = new SocketServer({ server:app });
 
 // Broadcast all messages to all clients
 wss.broadcast = function broadcast(data) {
@@ -28,9 +28,21 @@ wss.broadcast = function broadcast(data) {
 // the ws parameter in the callback.
 wss.on('connection', (ws) => {
   console.log('Client connected');
-  console.log (wss.clients.length)
-  ws.on('message', function (message){
+  wss.clients.forEach(function each(client) {
+      if (client !== ws) {
+        let counterMessage = { type: 'incomingConnection',
+                               userCounter: `${wss.clients.length} users online`,
+                               content: 'A user has connected'};
+        wss.broadcast(JSON.stringify(counterMessage));
+      }
+    });
+  // let counterMessage = { type: 'incomingConnection',
+  //                        userCounter: `${wss.clients.length} users online`,
+  //                        content: 'A user has connected'};
+  // wss.broadcast(JSON.stringify(counterMessage));
 
+  ws.on('message', function (message){
+    console.log(message)
     const parsedMessage = JSON.parse(message);
 
     switch(parsedMessage.type) {
@@ -47,7 +59,15 @@ wss.on('connection', (ws) => {
 
     wss.broadcast(JSON.stringify(parsedMessage));
   });
+
+  // ws.send({type: 'test', counter: '15 users online'})
   // Set up a callback for when a client closes the socket. This usually means they closed their browser.
-  ws.on('close', () => console.log('Client disconnected'));
+  ws.on('close', () => {
+    let counterMessage = { type: 'incomingConnection',
+                           userCounter: `${wss.clients.length} users online`,
+                           content: 'A user has disconnected'};
+    wss.broadcast(JSON.stringify(counterMessage));
+    console.log('Client disconnected');
+  });
 });
 

@@ -19,9 +19,9 @@ class App extends Component {
   componentDidMount() {
     this.socket = new WebSocket('ws://localhost:4000');
     this.socket.onmessage = (event) => {
-
+      // console.log(event)
       const data = JSON.parse(event.data);
-
+      console.log(data)
       switch(data.type) {
         case 'incomingMessage':
           this.receivedMessage(data);
@@ -29,6 +29,13 @@ class App extends Component {
         case 'incomingNotification':
           this.receivedMessage(data);
           break;
+        case 'incomingConnection':
+          this.setState({userCounter: data.userCounter})
+          this.receivedMessage(data);
+          break;
+        // case 'incomingDisconnect':
+        //   this.setState({userCounter: data.userCounter})
+        //   this.receivedMessage({content: `${this.state.currentUser.name} has disconnected`})
         default:
           throw new Error(`Unknown event type $(data.type}`);
       }
@@ -68,6 +75,7 @@ class App extends Component {
         <div className="wrapper">
           <nav>
             <h1>Chatty</h1>
+            <div className="client-count">{this.state.userCounter}</div>
           </nav>
           <MessageList messages={this.state.messages} nameChanged={this.state.systemMessage}/>
           <ChatBar newUser={this.changeCurrentUser}
