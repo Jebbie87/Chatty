@@ -17,16 +17,20 @@ class App extends Component {
       const data = JSON.parse(event.data);
       switch(data.type) {
         case 'incomingMessage':
-          this.receivedMessage(data);
-          break;
         case 'incomingNotification':
           this.receivedMessage(data);
           break;
         case 'incomingConnection':
-          console.log(data.color)
-          console.log(data)
-          this.setState({userCounter: data.userCounter })
+          this.setState({userCounter: data.userCounter });
           this.receivedMessage(data);
+          break;
+        case 'incomingUsersOnline':
+          this.setState({userCounter: data.userCounter});
+          break;
+        case 'incomingPicture':
+          // console.log(event.data)
+          // console.log('hello')
+          this.setState({picture: data.content})
           break;
         default:
           throw new Error(`Unknown event type $(data.type}`);
@@ -63,23 +67,24 @@ class App extends Component {
   }
 
   render() {
+    let { messages, currentUser, systemMessage, userCounter, picture } = this.state
     return (
         <div className="wrapper">
           <nav>
             <h1>Chatty</h1>
-            <span className="client-count">{this.state.userCounter}</span>
+            <span className="client-count">{userCounter}</span>
           </nav>
           <MessageList
-            messages = {this.state.messages}
-            nameChanged = {this.state.systemMessage}
+            messages = {messages}
+            nameChanged = {systemMessage}
+            image= {picture}
           />
           <ChatBar
             newUser = {this.changeCurrentUser}
-            currentUser = {this.state.currentUser}
+            currentUser = {currentUser}
             sendToServer = {this.sendServer}
           />
         </div>
-
     );
   }
 }

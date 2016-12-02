@@ -24,6 +24,9 @@ wss.broadcast = function broadcast(data) {
 };
 
 // 4 random colours that will be assigned to a client when they connect
+const imageURLCheck = (message) => {
+  return message.match(/(?:(?:(?:ftp|http|https|www)[s]*:\/\/|www\.)[^\.]+\.[^ \n]+)(?:.png|.jpg|.gif)/gi);
+}
 const colours = ["#0600ff", "#f1c40f", "#ff6347", "#34495e"];
 
 // Set up a callback that will run when a client connects to the server
@@ -31,11 +34,15 @@ const colours = ["#0600ff", "#f1c40f", "#ff6347", "#34495e"];
 // the ws parameter in the callback.
 wss.on('connection', (ws) => {
   console.log('Client connected');
+  const usersOnline = {
+    type: 'incomingUsersOnline',
+    userCounter: `${wss.clients.length} users online`
+  };
 
+  wss.broadcast(JSON.stringify(usersOnline))
   // this sends a user has connected message to every other client and updates how many clients are online
   const counterMessage = {
     type: 'incomingConnection',
-    userCounter: `${wss.clients.length} users online`,
     content: 'A user has connected'
   };
   wss.clients.forEach(function each(client) {
@@ -51,9 +58,16 @@ wss.on('connection', (ws) => {
     // this handles the incoming message and notification from the client side and sends it back to them
     switch(parsedMessage.type) {
       case 'postMessage':
-        parsedMessage.id = uuid.v1();
-        parsedMessage.color = color;
-        parsedMessage.type = 'incomingMessage';
+        // console.log(imageURLCheck(parsedMessage.content));
+        if(imageURLCheck(parsedMessage.content)) {
+          parsedMessage.id = uuid.v1();
+          parsedMessage.color = color;
+          parsedMessage.type = 'incomingPicture';
+        } else {
+          parsedMessage.id = uuid.v1();
+          parsedMessage.color = color;
+          parsedMessage.type = 'incomingMessage';
+        }
         break;
       case 'postNotification':
         parsedMessage.type = 'incomingNotification';

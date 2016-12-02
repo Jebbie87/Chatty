@@ -24,6 +24,7 @@ class ChatBar extends Component {
   // this function submits all the data to App.jsx after pressing enter
   handleSubmit = (event) => {
     if (event.key === 'Enter'){
+        // if (this.state.value.match(/.(\w+)$/)[0]))
       this.props.sendToServer({ type: 'postMessage',
                                 username: this.props.currentUser.name || 'Anonymous',
                                 content: this.state.value})

@@ -5,13 +5,15 @@ import uuid from 'node-uuid';
 
 class MessageList extends Component {
   render() {
+    const { messages, nameChanged, image } = this.props
+    // console.log(this.props.image)
     return (
       <div id="message-list">
-        {this.props.messages.map((message) =>
-          <Message key={uuid.v1()} message={message} />
+        {messages.map((message, index) =>
+          <Message imageurl={image} key = {index} message = {message} />
         )}
         <div className="message system">
-          {this.props.nameChanged}
+          {nameChanged}
         </div>
       </div>
     );
