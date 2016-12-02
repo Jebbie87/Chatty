@@ -8,10 +8,12 @@ class ChatBar extends Component {
                   name: ''};
   }
 
+  // this function handles the change happening on the chat box
   handleChange = (event) => {
     this.setState({value: event.target.value})
   }
 
+  // this function handles the change happening on the user box and also sends it to App.jsx after hitting enter
   handleUser = (event) => {
     if (event.key === 'Enter') {
       this.props.newUser(this.props.currentUser.name, this.state.name)
@@ -19,6 +21,7 @@ class ChatBar extends Component {
       this.setState({name: event.target.value})
   }
 
+  // this function submits all the data to App.jsx after pressing enter
   handleSubmit = (event) => {
     if (event.key === 'Enter'){
       this.props.sendToServer({ type: 'postMessage',
@@ -29,24 +32,24 @@ class ChatBar extends Component {
   }
 
   render() {
-
     return (
     <footer>
-
-        <input value={this.state.name}
-               onChange={this.handleUser}
-               onKeyDown={this.handleUser}
-               id="username" type="text"
-               placeholder="Your Name (Optional)"
+        <input
+          value={this.state.name}
+          onChange={this.handleUser}
+          onKeyDown={this.handleUser}
+          id="username"
+          type="text"
+          placeholder="Your Name (Optional)"
         />
-
-        <input value={this.state.value}
-               onChange={this.handleChange}
-               onKeyDown={this.handleSubmit}
-               id="new-message" type="submit text"
-               placeholder="Type a message and hit ENTER"
+        <input
+          value={this.state.value}
+          onChange={this.handleChange}
+          onKeyDown={this.handleSubmit}
+          id="new-message"
+          type="submit text"
+          placeholder="Type a message and hit ENTER"
         />
-
     </footer>
     );
   }

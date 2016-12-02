@@ -1,12 +1,7 @@
 import React, {Component} from 'react';
-import MessageList from './MessageList.jsx';
-import ChatBar from './ChatBar.jsx';
 import uuid from 'node-uuid';
-
-var data = {
-  currentUser: {name: ''},
-  messages: []
-};
+import ChatBar from './ChatBar.jsx';
+import MessageList from './MessageList.jsx';
 
 class App extends Component {
 
@@ -19,9 +14,7 @@ class App extends Component {
   componentDidMount() {
     this.socket = new WebSocket('ws://localhost:4000');
     this.socket.onmessage = (event) => {
-      // console.log(event)
       const data = JSON.parse(event.data);
-      console.log(data)
       switch(data.type) {
         case 'incomingMessage':
           this.receivedMessage(data);
@@ -30,28 +23,29 @@ class App extends Component {
           this.receivedMessage(data);
           break;
         case 'incomingConnection':
-          this.setState({userCounter: data.userCounter})
+          console.log(data.color)
+          console.log(data)
+          this.setState({userCounter: data.userCounter })
           this.receivedMessage(data);
           break;
-        // case 'incomingDisconnect':
-        //   this.setState({userCounter: data.userCounter})
-        //   this.receivedMessage({content: `${this.state.currentUser.name} has disconnected`})
         default:
           throw new Error(`Unknown event type $(data.type}`);
       }
     }
   }
 
+  // this will take the message sent from the client and send it to the server
   sendServer = (message) => {
     this.socket.send(JSON.stringify(message));
   }
 
+  // this function takes the data from the server and updates the state with the new message
   receivedMessage = (serverMessage) => {
     this.setState({messages: this.state.messages.concat(serverMessage) });
   }
 
-  // set to new user
-  // add new message to system containing both users
+  // this will change the current user. if the user entered is empty, it will add anonymous to the message username
+  // this also sends the notification to the server when a user changes their name
   changeCurrentUser = (prevUser, newUser) => {
     if (prevUser != newUser) {
         if (prevUser === '') {
@@ -59,15 +53,13 @@ class App extends Component {
         } else if (newUser === '') {
           newUser = 'Anonymous'
         };
-      const sendNotification = {type: 'postNotification',
-                                content: `${prevUser} changed their name to ${newUser}`};
+      const sendNotification = {
+        type: 'postNotification',
+        content: `${prevUser} changed their name to ${newUser}`
+      };
       this.socket.send(JSON.stringify(sendNotification));
     };
     this.setState({currentUser: {name: newUser}});
-  }
-
-  notifyNameChange = (nameChange) => {
-    this.setState({systemMessage: nameChange});
   }
 
   render() {
@@ -75,14 +67,17 @@ class App extends Component {
         <div className="wrapper">
           <nav>
             <h1>Chatty</h1>
-            <div className="client-count">{this.state.userCounter}</div>
+            <span className="client-count">{this.state.userCounter}</span>
           </nav>
-          <MessageList messages={this.state.messages} nameChanged={this.state.systemMessage}/>
-          <ChatBar newUser={this.changeCurrentUser}
-                   currentUser={this.state.currentUser}
-                   sendToServer={this.sendServer}
-                   notifyNameChange={this.notifyNameChange}>
-          </ChatBar>
+          <MessageList
+            messages = {this.state.messages}
+            nameChanged = {this.state.systemMessage}
+          />
+          <ChatBar
+            newUser = {this.changeCurrentUser}
+            currentUser = {this.state.currentUser}
+            sendToServer = {this.sendServer}
+          />
         </div>
 
     );
