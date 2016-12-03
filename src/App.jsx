@@ -30,9 +30,6 @@ class App extends Component {
         case 'incomingUsersOnline':
           this.setState({userCounter: data.userCounter});
           break;
-        case 'incomingPicture':
-          this.setState({picture: data.content});
-          break;
         default:
           throw new Error(`Unknown event type $(data.type}`);
       };
@@ -66,11 +63,11 @@ class App extends Component {
       };
       this.socket.send(JSON.stringify(sendNotification));
     };
-    this.setState({currentUser: {name: newUser}});
+    this.setState( {currentUser: {name: newUser}} );
   };
 
   render() {
-    const { messages, currentUser, systemMessage, userCounter, picture } = this.state;
+    const { messages, currentUser, systemMessage, userCounter } = this.state;
     return (
         <div className="wrapper">
           <nav>
@@ -80,7 +77,6 @@ class App extends Component {
           <MessageList
             messages = {messages}
             nameChanged = {systemMessage}
-            image= {picture}
           />
           <ChatBar
             newUser = {this.changeCurrentUser}
