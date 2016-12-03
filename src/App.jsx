@@ -1,3 +1,4 @@
+'use strict';
 import React, {Component} from 'react';
 import uuid from 'node-uuid';
 import ChatBar from './ChatBar.jsx';
@@ -7,9 +8,11 @@ class App extends Component {
 
   constructor(props) {
     super(props);
-    this.state = { currentUser: {name: ''},
-                   messages: [] };
-  }
+    this.state = {
+      currentUser: {name: ''},
+      messages: []
+    };
+  };
 
   componentDidMount() {
     this.socket = new WebSocket('ws://localhost:4000');
@@ -28,34 +31,34 @@ class App extends Component {
           this.setState({userCounter: data.userCounter});
           break;
         case 'incomingPicture':
-          // console.log(event.data)
-          // console.log('hello')
-          this.setState({picture: data.content})
+          this.setState({picture: data.content});
           break;
         default:
           throw new Error(`Unknown event type $(data.type}`);
-      }
-    }
-  }
+      };
+    };
+  };
 
   // this will take the message sent from the client and send it to the server
   sendServer = (message) => {
     this.socket.send(JSON.stringify(message));
-  }
+  };
 
   // this function takes the data from the server and updates the state with the new message
   receivedMessage = (serverMessage) => {
-    this.setState({messages: this.state.messages.concat(serverMessage) });
-  }
+    //old code
+    //this.setState( {messages: this.state.messages.concat(serverMessage)} );
+    this.setState({messages: [...this.state.messages, serverMessage] });
+  };
 
   // this will change the current user. if the user entered is empty, it will add anonymous to the message username
   // this also sends the notification to the server when a user changes their name
   changeCurrentUser = (prevUser, newUser) => {
-    if (prevUser != newUser) {
+    if (prevUser !== newUser) {
         if (prevUser === '') {
-          prevUser = 'Anonymous'
+          prevUser = 'Anonymous';
         } else if (newUser === '') {
-          newUser = 'Anonymous'
+          newUser = 'Anonymous';
         };
       const sendNotification = {
         type: 'postNotification',
@@ -64,10 +67,10 @@ class App extends Component {
       this.socket.send(JSON.stringify(sendNotification));
     };
     this.setState({currentUser: {name: newUser}});
-  }
+  };
 
   render() {
-    let { messages, currentUser, systemMessage, userCounter, picture } = this.state
+    const { messages, currentUser, systemMessage, userCounter, picture } = this.state;
     return (
         <div className="wrapper">
           <nav>

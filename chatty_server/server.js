@@ -24,9 +24,6 @@ wss.broadcast = function broadcast(data) {
 };
 
 // 4 random colours that will be assigned to a client when they connect
-const imageURLCheck = (message) => {
-  return message.match(/(?:(?:(?:ftp|http|https|www)[s]*:\/\/|www\.)[^\.]+\.[^ \n]+)(?:.png|.jpg|.gif)/gi);
-}
 const colours = ["#0600ff", "#f1c40f", "#ff6347", "#34495e"];
 
 // Set up a callback that will run when a client connects to the server
@@ -46,7 +43,9 @@ wss.on('connection', (ws) => {
     content: 'A user has connected'
   };
   wss.clients.forEach(function each(client) {
-    if (client !== ws) client.send(JSON.stringify(counterMessage));
+    if (client !== ws) {
+      client.send(JSON.stringify(counterMessage));
+    };
   });
 
   // assigns a random colour to the user
@@ -58,23 +57,16 @@ wss.on('connection', (ws) => {
     // this handles the incoming message and notification from the client side and sends it back to them
     switch(parsedMessage.type) {
       case 'postMessage':
-        // console.log(imageURLCheck(parsedMessage.content));
-        if(imageURLCheck(parsedMessage.content)) {
-          parsedMessage.id = uuid.v1();
-          parsedMessage.color = color;
-          parsedMessage.type = 'incomingPicture';
-        } else {
           parsedMessage.id = uuid.v1();
           parsedMessage.color = color;
           parsedMessage.type = 'incomingMessage';
-        }
         break;
       case 'postNotification':
         parsedMessage.type = 'incomingNotification';
         break;
       default:
-        throw new Error(`Unknown event type ${parsedMessage.type}`)
-    }
+        throw new Error(`Unknown event type ${parsedMessage.type}`);
+    };
 
   wss.broadcast(JSON.stringify(parsedMessage)); // broadcasts the message after being parsed and handled
   });
