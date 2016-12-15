@@ -1,3 +1,8 @@
+App Details
+=====================
+
+A simple chat app that uses React and Web Sockets
+
 React Boilerplate
 =====================
 
